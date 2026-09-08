@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traductor Inteligente de Voz</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <button class="theme-btn" id="theme-toggle">Modo Oscuro 🌙</button>
+        <h2 style="text-align: center; margin-bottom: 20px;">Traductor Inteligente</h2>
+        
+        <form id="translate-form">
+            <div class="row">
+                <div class="form-group">
+                    <label for="source_lang">De:</label>
+                    <select id="source_lang">
+                        <option value="auto" selected>Detectar idioma ✨</option>
+                        <option value="es">Español</option>
+                        <option value="en">Inglés</option>
+                        <option value="fr">Francés</option>
+                        <option value="de">Alemán</option>
+                        <option value="it">Italiano</option>
+                        <option value="pt">Portugués</option>
+                    </select>
+                </div>
+                
+                <button type="button" class="swap-btn" id="swap-langs">⇄</button>
+                
+                <div class="form-group">
+                    <label for="target_lang">A:</label>
+                    <select id="target_lang">
+                        <option value="en" selected>Inglés</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Francés</option>
+                        <option value="de">Alemán</option>
+                        <option value="it">Italiano</option>
+                        <option value="pt">Portugués</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="query">Texto a traducir / Dictar:</label>
+                <div class="input-with-mic">
+                    <textarea id="query" rows="4" placeholder="Escribe algo aquí..."></textarea>
+                    <button type="button" class="mic-btn" id="mic-toggle">🎙</button>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="gender">Voz del Audio:</label>
+                    <select id="gender">
+                        <option value="female" selected>Femenina</option>
+                        <option value="male">Masculina</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="translator">Motor:</label>
+                    <select id="translator">
+                        <option value="google" selected>Google Translator</option>
+                        <option value="mymemory">MyMemory</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top: 15px;">
+                <button type="button" class="clear-btn" id="clear-text" style="flex: 1;">Borrar</button>
+                <button type="submit" id="submit-translate" style="flex: 2;">Traducir</button>
+            </div>
+        </form>
+
+        <div class="form-group response-container" style="margin-top: 25px;">
+            <label>Resultado:</label>
+            <textarea id="result-text" rows="4" readonly placeholder="La traducción aparecerá aquí..."></textarea>
+            
+            <div class="spinner-container" id="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+
+            <div class="action-buttons">
+                <a href="#" id="download-link" class="download-btn" title="Descargar Audio">⬇</a>
+                <button type="button" id="copy-text" class="copy-btn" title="Copiar Texto">📋</button>
+                <button type="button" id="play-audio" class="audio-btn" title="Escuchar Audio">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica básica de Frontend para integración con la API de Flask
+        const form = document.getElementById('translate-form');
+        const themeToggle = document.getElementById('theme-toggle');
+        const swapLangs = document.getElementById('swap-langs');
+        const clearText = document.getElementById('clear-text');
+        const queryText = document.getElementById('query');
+        const resultText = document.getElementById('result-text');
+        const spinner = document.getElementById('loading-spinner');
+        const actionButtons = document.querySelectorAll('.action-buttons a, .action-buttons button');
+        
+        let audioObject = null;
+
+        // Modo oscuro
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            if (currentTheme === 'dark') {
+                document.documentElement.removeAttribute('data-theme');
+                themeToggle.textContent = 'Modo Oscuro 🌙';
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = 'Modo Claro ☀️';
+            }
+        });
+
+        // Intercambiar idiomas
+        swapLangs.addEventListener('click', () => {
+            const source = document.getElementById('source_lang');
+            const target = document.getElementById('target_lang');
+            if (source.value !== 'auto') {
+                const temp = source.value;
+                source.value = target.value;
+                target.value = temp;
+            }
+        });
+
+        // Limpiar campos
+        clearText.addEventListener('click', () => {
+            queryText.value = '';
+            resultText.value = '';
+            actionButtons.forEach(btn => btn.style.display = 'none');
+        });
+
+        // Enviar traducción
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = queryText.value.trim();
+            if (!text) return;
+
+            spinner.style.display = 'block';
+            actionButtons.forEach(btn => btn.style.display = 'none');
+
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        query: text,
+                        source_lang: document.getElementById('source_lang').value,
+                        target_lang: document.getElementById('target_lang').value,
+                        gender: document.getElementById('gender').value,
+                        translator: document.getElementById('translator').value
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    alert(data.error);
+                } else {
+                    resultText.value = data.translated;
+                    
+                    // Configurar botones de acción
+                    document.getElementById('download-link').href = data.audio_url;
+                    document.getElementById('download-link').setAttribute('download', 'traduccion.mp3');
+                    
+                    audioObject = new Audio(data.audio_url);
+                    
+                    actionButtons.forEach(btn => btn.style.display = 'flex');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Ocurrió un error al procesar la traducción.');
+            } finally {
+                spinner.style.display = 'none';
+            }
+        });
+
+        // Reproducir audio
+        document.getElementById('play-audio').addEventListener('click', () => {
+            if (audioObject) audioObject.play();
+        });
+
+        // Copiar texto
+        document.getElementById('copy-text').addEventListener('click', () => {
+            if (resultText.value) {
+                navigator.clipboard.writeText(resultText.value);
+                alert('Texto copiado al portapapeles');
+            }
+        });
+
+        // Reconocimiento de voz (Simulación/Básico)
+        const micBtn = document.getElementById('mic-toggle');
+        if ('webkitSpeechRecognition' in window || 'speechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            const recognition = new SpeechRecognition();
+            
+            recognition.onstart = () => { micBtn.classList.add('recording'); };
+            recognition.onend = () => { micBtn.classList.remove('recording'); };
+            recognition.onresult = (event) => {
+                queryText.value = event.results[0][0].transcript;
+            };
+            
+            micBtn.addEventListener('click', () => {
+                const sourceLang = document.getElementById('source_lang').value;
+                recognition.lang = sourceLang === 'auto' ? 'es-ES' : sourceLang;
+                recognition.start();
+            });
+        } else {
+            micBtn.style.backgroundColor = '#6c757d';
+            micBtn.title = "Dictado de voz no soportado en este navegador";
+        }
+    </script>
+</body>
+</html>
