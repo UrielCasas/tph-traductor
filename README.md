@@ -8,9 +8,7 @@ La app puede ser utilizada de manera local, y también estará desplegado en _Re
 .
 ├── static/                 # Se agregan los archivos .mp3 en esta carpeta
 │
-├── tests/                  # Experimentación y análisis de los modelos
-│   ├── videos/
-│   │    └── Video del LLM como experimentación
+├── tests/                  # Experimentación y análisis de los motores
 │   ├── texto_corto.md
 │   └── texto_largo.md
 │
