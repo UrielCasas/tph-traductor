@@ -6,7 +6,7 @@ Para el mismo, se comprueba el mantenimiento del contexto y de la estructura del
 
 Cabe aclarar que este experimento se realizara con un **texto corto**, por lo que los resultados pueden variar dependiendo de la longitud del texto.
 
-## Texto Original
+### Texto Original
 ```
 No dejes para mañana lo que puedas hacer hoy.
 Al mal tiempo, buena cara. 
@@ -28,7 +28,7 @@ Cuando hace mal tiempo, buena cara.
 Más vale tarde que nunca.
 ```
 
-## Análisis - Google
+### Análisis - Google
 Google logra conservar gran parte de la estructura y el significado del texto original. La única diferencia notable se encuentra en la segunda línea.
 
 Oración original:
@@ -58,7 +58,7 @@ Con mal tiempo, buena cara.
 Más vale tarde que nunca.
 ```
 
-## Análisis - Microsoft
+### Análisis - Microsoft
 
 La primera y tercera oración mantienen prácticamente la misma estructura y significado que el texto original.
 
@@ -75,3 +75,10 @@ Pasó a:
 Aunque cambia la preposición de _al_ a _con_, se mantiene el significado general de la expresión.
 
 Por lo tanto, Microsoft logra conservar el contexto de la oración, aunque modifica ligeramente su estructura.
+
+## Conclusión
+Ambos motores muestran alta capacidad para reconocer y construir refranes de manera correcta en su viaje de ida (al inglés) a vuelta (al español).
+
+Aunque **Google** optó más por una reconstrucción más descriptiva, **Microsoft** se mantuvo más fiel al texto original.
+
+En conclusión, ambos motores garantizar la preservación del significado y el contexto, pero no recuperar a su totalidad la estructura original al regresar al idioma de origen.
