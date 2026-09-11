@@ -15,7 +15,7 @@ La app puede ser utilizada de manera local, y también estará desplegado en _Re
 │
 ├── Procfile                # Comando para indicarle a Render como arrancar la aplicación
 ├── README.md               # Información sobre el repositorio
-├── app.py                  # Archivo de python donde se encuentra el LLM
+├── app.py                  # Archivo de python que consume un LLM
 ├── ejecutar.bat            # Abre la app.py de manera local
 ├── index.html              # Estructura base de la interfaz de la app.py
 └── requirements.txt        # Requisitos (librerias) para utilizar el LLM
